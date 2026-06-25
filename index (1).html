@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JS Multispeciality Clinic – Virudhachalam</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- ✅ FIREBASE SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    // ✅ YOUR FIREBASE CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyDEkfX8R3H0m5dS2AqYQiFWgTjiioaDwjQ",
+     authDomain: "js-hospital-fada9.firebaseapp.com",
+     projectId: "js-hospital-fada9",
+     storageBucket: "js-hospital-fada9.firebasestorage.app",
+     messagingSenderId: "721735239795",
+     appId: "1:721735239795:web:d3fa5761c7d0d818168206",
+     measurementId: "G-TT4HYKSR8N"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // ---- LOGIN ----
+    window.doLogin = async function() {
+      const email = document.getElementById('login-user').value.trim();
+      const pass = document.getElementById('login-pass').value;
+      const errEl = document.getElementById('login-err');
+      errEl.style.display = 'none';
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        closeLogin();
+        showAdminPanel();
+        loadAppointments();
+      } catch(e) {
+        errEl.textContent = 'Wrong email or password. Try again.';
+        errEl.style.display = 'block';
+      }
+    };
+
+    // ---- LOGOUT ----
+    window.adminLogout = async function() {
+      await signOut(auth);
+      document.getElementById('admin-panel').style.display = 'none';
+      document.getElementById('public-site').style.display = 'block';
+    };
+
+    // ---- SUBMIT APPOINTMENT ----
+    window.submitAppointment = async function() {
+      const name   = document.getElementById('pt-name').value.trim();
+      const phone  = document.getElementById('pt-phone').value.trim();
+      const doctor = document.getElementById('pt-doctor').value;
+      const date   = document.getElementById('pt-date').value;
+      const age    = document.getElementById('pt-age').value;
+      const session= document.getElementById('pt-session').value;
+      const reason = document.getElementById('pt-reason').value.trim();
+
+      if (!name || !phone || !doctor || !date) {
+        showToast('⚠️ Please fill all required fields.'); return;
+      }
+
+      const btn = document.querySelector('.form-submit');
+      btn.textContent = 'Submitting...'; btn.disabled = true;
+
+      try {
+        await addDoc(collection(db, 'appointments'), {
+          patientName: name, phone, age, doctorName: doctor,
+          appointmentDate: date, session, reason, status: 'Pending',
+          submittedAt: serverTimestamp()
+        });
+        ['pt-name','pt-age','pt-phone','pt-doctor','pt-date','pt-reason']
+          .forEach(id => document.getElementById(id).value = '');
+        showToast('✅ Appointment submitted! We will confirm shortly.');
+      } catch(e) {
+        showToast('❌ Error submitting. Please call us directly.');
+      }
+      btn.textContent = 'Submit Appointment Request'; btn.disabled = false;
+    };
+
+    // ---- LOAD APPOINTMENTS (Admin) ----
+    window.loadAppointments = function() {
+      const q = query(collection(db, 'appointments'), orderBy('submittedAt', 'desc'));
+      onSnapshot(q, (snapshot) => {
+        const appts = [];
+        snapshot.forEach(d => appts.push({ id: d.id, ...d.data() }));
+        renderAdminTable(appts);
+      });
+    };
+
+    // ---- CHANGE STATUS ----
+    window.changeStatus = async function(id, status) {
+      await updateDoc(doc(db, 'appointments', id), { status });
+      showToast('Status updated to ' + status);
+    };
+
+    // ---- DELETE ----
+    window.deleteAppt = async function(id) {
+      if (!confirm('Delete this appointment?')) return;
+      await deleteDoc(doc(db, 'appointments', id));
+      showToast('Appointment deleted.');
+    };
+
+    // Auth state watcher
+    onAuthStateChanged(auth, user => {
+      if (user && document.getElementById('admin-panel').style.display === 'block') {
+        loadAppointments();
+      }
+    });
+  </script>
+
+  <style>
+    :root {
+      --blue-deep: #0B3D91; --blue-mid: #1565C0; --blue-light: #1E88E5;
+      --gold: #D4A017; --white: #FFFFFF; --off-white: #F5F7FA;
+      --gray-100: #EEF1F6; --gray-400: #8A94A6; --gray-700: #3A4255;
+      --text: #1A2236; --radius: 12px; --shadow: 0 4px 24px rgba(11,61,145,0.10);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; color: var(--text); background: var(--white); }
+
+    nav { background: var(--blue-deep); display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; height: 68px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
+    .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .nav-logo { width: 38px; height: 38px; background: var(--white); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .nav-title { color: var(--white); font-family: 'Playfair Display', serif; font-size: 1.12rem; line-height: 1.2; }
+    .nav-title span { display: block; font-family: 'Inter', sans-serif; font-size: 0.68rem; font-weight: 400; color: #A8C4F0; letter-spacing: 0.04em; }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { color: #C8D8F5; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color .2s; }
+    .nav-links a:hover { color: var(--white); }
+    .nav-cta { background: var(--gold); color: var(--white); border: none; padding: 9px 22px;
+      border-radius: 24px; font-size: 0.88rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: background .2s; }
+    .nav-cta:hover { background: #b88a10; }
+    .nav-admin { background: transparent; border: 1.5px solid #A8C4F0; color: #C8D8F5;
+      padding: 7px 18px; border-radius: 24px; font-size: 0.83rem; cursor: pointer; text-decoration: none;
+      margin-left: 10px; transition: all .2s; }
+    .nav-admin:hover { background: rgba(255,255,255,0.1); color: var(--white); }
+
+    .hero { background: linear-gradient(135deg, var(--blue-deep) 0%, var(--blue-mid) 60%, #1A6DD4 100%);
+      color: var(--white); padding: 80px 32px 72px; text-align: center; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+    .hero-badge { display: inline-block; background: rgba(212,160,23,0.25); border: 1px solid var(--gold);
+      color: var(--gold); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em;
+      padding: 5px 16px; border-radius: 20px; margin-bottom: 20px; text-transform: uppercase; }
+    .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.15; margin-bottom: 14px; }
+    .hero p { font-size: 1.05rem; color: #B8CCF0; max-width: 520px; margin: 0 auto 36px; line-height: 1.7; }
+    .hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary { background: var(--gold); color: var(--white); border: none; padding: 14px 34px;
+      border-radius: 32px; font-size: 1rem; font-weight: 600; cursor: pointer; text-decoration: none;
+      transition: background .2s, transform .15s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary:hover { background: #b88a10; transform: translateY(-1px); }
+    .btn-secondary { background: transparent; color: var(--white); border: 2px solid rgba(255,255,255,0.55);
+      padding: 13px 30px; border-radius: 32px; font-size: 1rem; font-weight: 500; cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px; transition: all .2s; }
+    .btn-secondary:hover { border-color: var(--white); background: rgba(255,255,255,0.08); }
+
+    .stats { background: var(--white); display: flex; justify-content: center; flex-wrap: wrap;
+      box-shadow: var(--shadow); border-bottom: 1px solid var(--gray-100); }
+    .stat { text-align: center; padding: 24px 40px; border-right: 1px solid var(--gray-100); flex: 1; min-width: 140px; }
+    .stat:last-child { border-right: none; }
+    .stat-num { font-size: 1.9rem; font-weight: 700; color: var(--blue-mid); font-family: 'Playfair Display', serif; }
+    .stat-lbl { font-size: 0.78rem; color: var(--gray-400); font-weight: 500; margin-top: 2px; }
+
+    section { padding: 70px 32px; }
+    .section-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; color: var(--blue-light); text-transform: uppercase; margin-bottom: 10px; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 3vw, 2.3rem); color: var(--text); margin-bottom: 14px; }
+
+    #doctors { background: var(--off-white); }
+    .doctors-grid { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; }
+    .doctor-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 36px 32px; flex: 1; min-width: 280px; max-width: 380px; text-align: center;
+      border-top: 4px solid var(--blue-mid); transition: transform .2s; }
+    .doctor-card:hover { transform: translateY(-4px); }
+    .doc-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--blue-deep), var(--blue-light));
+      display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--white); margin: 0 auto 20px; }
+    .doc-name { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--text); margin-bottom: 4px; }
+    .doc-tamil { font-size: 0.88rem; color: var(--gray-400); margin-bottom: 12px; }
+    .doc-quals { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 14px; }
+    .qual-tag { background: var(--blue-deep); color: var(--white); font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 12px; }
+    .doc-specialty { font-size: 0.87rem; color: var(--blue-mid); font-weight: 500; }
+
+    #services { background: var(--white); }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+    .svc-card { background: var(--off-white); border-radius: var(--radius); padding: 28px 24px;
+      display: flex; flex-direction: column; gap: 10px; border: 1.5px solid var(--gray-100); transition: border-color .2s, box-shadow .2s; }
+    .svc-card:hover { border-color: var(--blue-light); box-shadow: var(--shadow); }
+    .svc-icon { font-size: 2rem; }
+    .svc-name { font-weight: 600; color: var(--text); font-size: 1rem; }
+    .svc-desc { font-size: 0.84rem; color: var(--gray-400); line-height: 1.55; }
+
+    #timing { background: var(--blue-deep); color: var(--white); }
+    #timing .section-title { color: var(--white); }
+    #timing .section-label { color: var(--gold); }
+    .timing-grid { display: flex; gap: 24px; flex-wrap: wrap; }
+    .timing-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: var(--radius); padding: 28px 32px; flex: 1; min-width: 240px; }
+    .timing-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 16px; color: var(--gold); }
+    .timing-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 0.9rem; }
+    .timing-row:last-child { border-bottom: none; }
+    .timing-row .day { color: #A8C4F0; }
+    .timing-row .time { color: var(--white); font-weight: 500; }
+
+    #appointment { background: var(--off-white); }
+    .appt-wrapper { display: flex; gap: 40px; flex-wrap: wrap; }
+    .appt-info { flex: 1; min-width: 260px; }
+    .contact-item { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 20px; }
+    .contact-icon { width: 42px; height: 42px; border-radius: 10px; background: var(--blue-deep);
+      display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .contact-label { font-size: 0.78rem; color: var(--gray-400); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+    .contact-val { font-size: 0.97rem; color: var(--text); font-weight: 500; margin-top: 2px; }
+    .call-btn { display: inline-flex; align-items: center; gap: 10px; background: var(--blue-mid); color: var(--white);
+      padding: 14px 28px; border-radius: 30px; font-size: 1rem; font-weight: 600; text-decoration: none; margin-top: 8px; transition: background .2s; }
+    .call-btn:hover { background: var(--blue-deep); }
+    .appt-form { flex: 1.5; min-width: 300px; background: var(--white); border-radius: var(--radius); padding: 36px; box-shadow: var(--shadow); }
+    .appt-form h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 24px; color: var(--text); }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--gray-700); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; border: 1.5px solid var(--gray-100); border-radius: 8px; padding: 11px 14px;
+      font-size: 0.94rem; font-family: 'Inter', sans-serif; color: var(--text); background: var(--off-white); transition: border-color .2s; outline: none; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--blue-light); background: var(--white); }
+    .form-row { display: flex; gap: 14px; }
+    .form-row .form-group { flex: 1; }
+    .form-submit { width: 100%; background: var(--blue-mid); color: var(--white); border: none; padding: 14px;
+      border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background .2s; margin-top: 4px; }
+    .form-submit:hover { background: var(--blue-deep); }
+    .form-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    #location { background: var(--white); }
+    .location-wrap { display: flex; gap: 36px; flex-wrap: wrap; align-items: flex-start; }
+    .location-info { flex: 1; min-width: 260px; }
+    .map-embed { flex: 2; min-width: 300px; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); height: 320px; }
+    .map-embed iframe { width: 100%; height: 100%; border: none; }
+
+    footer { background: var(--text); color: #8A94A6; padding: 40px 32px 24px; text-align: center; }
+    footer .footer-brand { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--white); margin-bottom: 6px; }
+    footer p { font-size: 0.84rem; line-height: 1.7; }
+    footer a { color: #6A9FD4; text-decoration: none; }
+
+    /* MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(11,61,145,0.55);
+      backdrop-filter: blur(4px); z-index: 999; align-items: center; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: var(--white); border-radius: 16px; padding: 44px 40px; width: 100%; max-width: 440px;
+      box-shadow: 0 16px 60px rgba(0,0,0,0.25); position: relative; }
+    .modal h2 { font-family: 'Playfair Display', serif; font-size: 1.6rem; margin-bottom: 6px; color: var(--text); }
+    .modal p { font-size: 0.88rem; color: var(--gray-400); margin-bottom: 28px; }
+    .modal-close { position: absolute; top: 18px; right: 20px; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--gray-400); }
+    .modal-err { color: #c0392b; font-size: 0.84rem; margin-top: 10px; display: none; }
+    .modal-login-btn { width: 100%; background: var(--blue-deep); color: var(--white); border: none; padding: 14px;
+      border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background .2s; }
+    .modal-login-btn:hover { background: var(--blue-mid); }
+
+    /* ADMIN */
+    #admin-panel { display: none; min-height: 100vh; background: var(--off-white); }
+    .admin-header { background: var(--blue-deep); color: var(--white); padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
+    .admin-header h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; }
+    .admin-logout { background: rgba(255,255,255,0.15); border: none; color: var(--white); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 0.88rem; }
+    .admin-logout:hover { background: rgba(255,255,255,0.25); }
+    .admin-body { padding: 32px; max-width: 1100px; margin: 0 auto; }
+    .admin-stats { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 32px; }
+    .admin-stat { background: var(--white); border-radius: var(--radius); padding: 24px 28px; flex: 1; min-width: 160px; box-shadow: var(--shadow); border-left: 4px solid var(--blue-mid); }
+    .admin-stat .num { font-size: 2rem; font-weight: 700; color: var(--blue-deep); font-family: 'Playfair Display', serif; }
+    .admin-stat .lbl { font-size: 0.8rem; color: var(--gray-400); margin-top: 4px; }
+    .admin-section { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 28px; }
+    .admin-section-hdr { padding: 20px 28px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; justify-content: space-between; }
+    .admin-section-hdr h3 { font-size: 1.05rem; font-weight: 600; color: var(--text); }
+    .appt-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .appt-table th { background: var(--off-white); padding: 12px 16px; text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.06em; }
+    .appt-table td { padding: 13px 16px; border-bottom: 1px solid var(--gray-100); color: var(--text); vertical-align: top; }
+    .appt-table tr:last-child td { border-bottom: none; }
+    .status-badge { padding: 3px 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+    .status-pending { background: #FFF3CD; color: #856404; }
+    .status-confirmed { background: #D1FAE5; color: #065F46; }
+    .status-completed { background: #DBEAFE; color: #1E40AF; }
+    .action-btn { background: none; border: 1.5px solid var(--blue-light); color: var(--blue-light);
+      padding: 5px 13px; border-radius: 8px; font-size: 0.78rem; cursor: pointer; margin-right: 5px; margin-bottom: 4px; transition: all .2s; }
+    .action-btn:hover { background: var(--blue-light); color: var(--white); }
+    .action-btn.del { border-color: #e74c3c; color: #e74c3c; }
+    .action-btn.del:hover { background: #e74c3c; color: var(--white); }
+    .empty-state { padding: 48px; text-align: center; color: var(--gray-400); font-size: 0.92rem; }
+    .loading-state { padding: 48px; text-align: center; color: var(--blue-mid); font-size: 0.92rem; }
+
+    .toast { position: fixed; bottom: 28px; right: 28px; background: var(--blue-deep); color: var(--white);
+      padding: 14px 24px; border-radius: 12px; font-size: 0.9rem; font-weight: 500; z-index: 2000;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2); transform: translateY(80px); opacity: 0; transition: all .35s; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 700px) {
+      nav { padding: 0 16px; }
+      .nav-links { display: none; }
+      section { padding: 50px 18px; }
+      .appt-form { padding: 24px; }
+      .modal { padding: 32px 22px; }
+      .admin-body { padding: 16px; }
+      .form-row { flex-direction: column; }
+      .appt-table { font-size: 0.78rem; }
+      .appt-table th, .appt-table td { padding: 10px 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- PUBLIC SITE -->
+<div id="public-site">
+  <nav>
+    <a href="#" class="nav-brand">
+      <div class="nav-logo">⚕</div>
+      <div class="nav-title">JS Multispeciality Clinic<span>Virudhachalam</span></div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#doctors">Doctors</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#timing">Timings</a></li>
+      <li><a href="#appointment">Appointment</a></li>
+      <li><a href="#location">Location</a></li>
+    </ul>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <a href="tel:08610064897" class="nav-cta">📞 Call Now</a>
+      <button class="nav-admin" onclick="openLogin()">Admin</button>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-badge">Trusted Healthcare · Virudhachalam</div>
+    <h1>Compassionate Care,<br/>Expert Healing</h1>
+    <p>JS Multispeciality Clinic brings together experienced specialists in Internal Medicine and Obstetrics & Gynaecology — right in the heart of Virudhachalam.</p>
+    <div class="hero-btns">
+      <a href="#appointment" class="btn-primary">📅 Book Appointment</a>
+      <a href="tel:08610064897" class="btn-secondary">📞 08610064897</a>
+    </div>
+  </section>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num">2</div><div class="stat-lbl">Specialist Doctors</div></div>
+    <div class="stat"><div class="stat-num">6</div><div class="stat-lbl">Days a Week</div></div>
+    <div class="stat"><div class="stat-num">2</div><div class="stat-lbl">OPD Sessions / Day</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-lbl">Dedicated Care</div></div>
+  </div>
+
+  <section id="doctors">
+    <div style="text-align:center;">
+      <div class="section-label">Our Specialists</div>
+      <h2 class="section-title">Meet Our Doctors</h2>
+      <p style="color:var(--gray-400);max-width:500px;margin:0 auto 40px;line-height:1.7;">Qualified, experienced, and committed to your wellbeing.</p>
+    </div>
+    <div class="doctors-grid">
+      <div class="doctor-card">
+        <div class="doc-avatar">👨‍⚕️</div>
+        <div class="doc-name">Dr. R. Shivasakthimani</div>
+        <div class="doc-tamil">டாக்டர். இரா. சிவசக்திமணி</div>
+        <div class="doc-quals">
+          <span class="qual-tag">MBBS</span><span class="qual-tag">MD</span>
+          <span class="qual-tag">Dip.in.nutri</span><span class="qual-tag">CC in Diab</span>
+        </div>
+        <div class="doc-specialty">🩺 General Physician & Diabetologist<br/>Nutritionist · Diabetology Expert</div>
+      </div>
+      <div class="doctor-card">
+        <div class="doc-avatar">👩‍⚕️</div>
+        <div class="doc-name">Dr. R. Jeevitha Shivasakthimani</div>
+        <div class="doc-tamil">டாக்டர். இரா. ஜீவிதா சிவசக்திமணி</div>
+        <div class="doc-quals">
+          <span class="qual-tag">MBBS</span><span class="qual-tag">MS</span><span class="qual-tag">OG</span>
+        </div>
+        <div class="doc-specialty">🤰 Obstetrician & Gynaecologist<br/>மகளிர் & மகப்பேறு நிபுணர்</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="services">
+    <div class="section-label">What We Offer</div>
+    <h2 class="section-title">Our Services</h2>
+    <p style="color:var(--gray-400);line-height:1.7;margin-bottom:36px;">Comprehensive medical care across multiple specialities under one roof.</p>
+    <div class="services-grid">
+      <div class="svc-card"><div class="svc-icon">🩺</div><div class="svc-name">General Medicine</div><div class="svc-desc">Diagnosis and treatment of common illnesses, fevers, infections, and chronic conditions.</div></div>
+      <div class="svc-card"><div class="svc-icon">🍎</div><div class="svc-name">Nutrition & Diet</div><div class="svc-desc">Personalised diet plans and nutritional counselling for a healthier lifestyle.</div></div>
+      <div class="svc-card"><div class="svc-icon">🩸</div><div class="svc-name">Diabetology</div><div class="svc-desc">Expert management of Type 1 & Type 2 diabetes including medication, lifestyle, and monitoring.</div></div>
+      <div class="svc-card"><div class="svc-icon">🤰</div><div class="svc-name">Obstetrics & Gynaecology</div><div class="svc-desc">Antenatal care, delivery support, gynaecological consultations, and women's health services.</div></div>
+      <div class="svc-card"><div class="svc-icon">👶</div><div class="svc-name">Maternity Care</div><div class="svc-desc">Comprehensive maternity care from conception to post-natal recovery.</div></div>
+      <div class="svc-card"><div class="svc-icon">💊</div><div class="svc-name">Chronic Disease Management</div><div class="svc-desc">Ongoing care for hypertension, thyroid disorders, and other chronic conditions.</div></div>
+    </div>
+  </section>
+
+  <section id="timing">
+    <div class="section-label">Visit Us</div>
+    <h2 class="section-title">Clinic Timings</h2>
+    <div class="timing-grid">
+      <div class="timing-card">
+        <h3>🌅 Morning OPD</h3>
+        <div class="timing-row"><span class="day">Monday – Saturday</span><span class="time">9:00 AM – 1:00 PM</span></div>
+        <div class="timing-row"><span class="day">Sunday</span><span class="time">Closed</span></div>
+      </div>
+      <div class="timing-card">
+        <h3>🌆 Evening OPD</h3>
+        <div class="timing-row"><span class="day">Monday – Saturday</span><span class="time">5:00 PM – 9:00 PM</span></div>
+        <div class="timing-row"><span class="day">Sunday</span><span class="time">Closed</span></div>
+      </div>
+      <div class="timing-card">
+        <h3>📞 Appointments</h3>
+        <div class="timing-row"><span class="day">Call Direct</span><span class="time">08610064897</span></div>
+        <div class="timing-row"><span class="day">Walk-ins</span><span class="time">Welcome</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="appointment">
+    <div class="appt-wrapper">
+      <div class="appt-info">
+        <div class="section-label">Get in Touch</div>
+        <h2 class="section-title">Book an Appointment</h2>
+        <p style="color:var(--gray-400);line-height:1.7;margin-bottom:28px;">Fill the form or call us directly. Our team will confirm your slot promptly.</p>
+        <div class="contact-item">
+          <div class="contact-icon">📞</div>
+          <div>
+            <div class="contact-label">Phone</div>
+            <div class="contact-val">08610064897</div>
+            <a href="tel:08610064897" class="call-btn" style="margin-top:10px;font-size:0.9rem;padding:10px 22px;">📞 Call to Book Appointment</a>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📍</div>
+          <div>
+            <div class="contact-label">Address</div>
+            <div class="contact-val">52, Bazaar St, T.Gopurapuram,<br/>Virudhachalam, Tamil Nadu 606001</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">🕐</div>
+          <div>
+            <div class="contact-label">Hours</div>
+            <div class="contact-val">Mon–Sat: 9AM–1PM & 5PM–9PM</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="appt-form">
+        <h3>📋 Request an Appointment</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Patient Name *</label>
+            <input type="text" id="pt-name" placeholder="Your full name" />
+          </div>
+          <div class="form-group">
+            <label>Age</label>
+            <input type="number" id="pt-age" placeholder="Age" min="0" max="120" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Phone Number *</label>
+          <input type="tel" id="pt-phone" placeholder="Your contact number" />
+        </div>
+        <div class="form-group">
+          <label>Select Doctor *</label>
+          <select id="pt-doctor">
+            <option value="">-- Choose Doctor --</option>
+            <option value="Dr. R. Shivasakthimani">Dr. R. Shivasakthimani – General Medicine & Diabetology</option>
+            <option value="Dr. R. Jeevitha Shivasakthimani">Dr. R. Jeevitha Shivasakthimani – Obstetrics & Gynaecology</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Preferred Date *</label>
+            <input type="date" id="pt-date" />
+          </div>
+          <div class="form-group">
+            <label>Session</label>
+            <select id="pt-session">
+              <option value="Morning (9AM–1PM)">Morning (9AM–1PM)</option>
+              <option value="Evening (5PM–9PM)">Evening (5PM–9PM)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Reason / Symptoms</label>
+          <textarea id="pt-reason" rows="3" placeholder="Briefly describe your concern (optional)"></textarea>
+        </div>
+        <button class="form-submit" onclick="submitAppointment()">Submit Appointment Request</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="location">
+    <div class="section-label">Find Us</div>
+    <h2 class="section-title">Our Location</h2>
+    <div class="location-wrap">
+      <div class="location-info">
+        <div class="contact-item" style="margin-bottom:22px;">
+          <div class="contact-icon">📍</div>
+          <div>
+            <div class="contact-label">Address</div>
+            <div class="contact-val" style="line-height:1.7;">52, Bazaar Street,<br/>T.Gopurapuram,<br/>Virudhachalam,<br/>Tamil Nadu – 606001</div>
+          </div>
+        </div>
+        <a href="https://maps.google.com/?q=52+Bazaar+St+T.Gopurapuram+Virudhachalam+Tamil+Nadu+606001" target="_blank" class="call-btn" style="font-size:0.9rem;padding:11px 24px;text-decoration:none;">🗺 Get Directions</a>
+      </div>
+      <div class="map-embed">
+        <iframe src="https://maps.google.com/maps?q=52+Bazaar+St+T.Gopurapuram+Virudhachalam+Tamil+Nadu+606001&output=embed" allowfullscreen loading="lazy"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-brand">JS Multispeciality Clinic</div>
+    <p style="margin-bottom:8px;">52, Bazaar St, T.Gopurapuram, Virudhachalam, Tamil Nadu 606001</p>
+    <p>📞 <a href="tel:08610064897">08610064897</a> &nbsp;|&nbsp; Mon–Sat: 9AM–1PM & 5PM–9PM</p>
+    <p style="margin-top:18px;font-size:0.76rem;color:#555f73;">© 2024 JS Multispeciality Clinic. All rights reserved.</p>
+  </footer>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel">
+  <div class="admin-header">
+    <h2>⚕ JS Clinic — Admin Dashboard</h2>
+    <button class="admin-logout" onclick="adminLogout()">🚪 Logout</button>
+  </div>
+  <div class="admin-body">
+    <div class="admin-stats">
+      <div class="admin-stat"><div class="num" id="stat-total">–</div><div class="lbl">Total Appointments</div></div>
+      <div class="admin-stat"><div class="num" id="stat-pending">–</div><div class="lbl">Pending</div></div>
+      <div class="admin-stat"><div class="num" id="stat-confirmed">–</div><div class="lbl">Confirmed</div></div>
+      <div class="admin-stat"><div class="num" id="stat-today">–</div><div class="lbl">Today's Appointments</div></div>
+    </div>
+    <div class="admin-section">
+      <div class="admin-section-hdr">
+        <h3>📋 All Appointment Requests</h3>
+        <span style="font-size:0.82rem;color:var(--gray-400);">Live updates from Firebase</span>
+      </div>
+      <div id="appt-table-wrap">
+        <div class="loading-state">⏳ Loading appointments from database...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeLogin()">✕</button>
+    <h2>Admin Login</h2>
+    <p>Enter your Firebase email and password to access the dashboard.</p>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="login-user" placeholder="doctor@jsclinic.com" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="modal-login-btn" onclick="doLogin()">Login to Dashboard</button>
+    <div class="modal-err" id="login-err">Wrong email or password. Try again.</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // UI helpers (non-Firebase)
+  function openLogin() {
+    document.getElementById('login-modal').classList.add('active');
+    setTimeout(() => document.getElementById('login-user').focus(), 100);
+  }
+  function closeLogin() {
+    document.getElementById('login-modal').classList.remove('active');
+    document.getElementById('login-err').style.display = 'none';
+  }
+  function showAdminPanel() {
+    document.getElementById('public-site').style.display = 'none';
+    document.getElementById('admin-panel').style.display = 'block';
+  }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+  function esc(s) {
+    if (!s) return '—';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function renderAdminTable(appts) {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('stat-total').textContent = appts.length;
+    document.getElementById('stat-pending').textContent = appts.filter(a=>a.status==='Pending').length;
+    document.getElementById('stat-confirmed').textContent = appts.filter(a=>a.status==='Confirmed').length;
+    document.getElementById('stat-today').textContent = appts.filter(a=>a.appointmentDate===today).length;
+
+    const wrap = document.getElementById('appt-table-wrap');
+    if (!appts.length) {
+      wrap.innerHTML = '<div class="empty-state">No appointments yet. Submitted forms will appear here in real-time.</div>';
+      return;
+    }
+    wrap.innerHTML = `
+      <div style="overflow-x:auto;">
+      <table class="appt-table">
+        <thead><tr>
+          <th>#</th><th>Patient</th><th>Phone</th><th>Doctor</th>
+          <th>Date</th><th>Session</th><th>Reason</th><th>Status</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+          ${appts.map((a,i)=>`
+            <tr>
+              <td>${i+1}</td>
+              <td><strong>${esc(a.patientName)}</strong>${a.age?` <span style="color:var(--gray-400);font-size:0.78rem;">(${a.age}y)</span>`:''}</td>
+              <td><a href="tel:${esc(a.phone)}" style="color:var(--blue-mid);">${esc(a.phone)}</a></td>
+              <td style="font-size:0.82rem;">${esc(a.doctorName)}</td>
+              <td>${esc(a.appointmentDate)}</td>
+              <td style="font-size:0.82rem;">${esc(a.session)}</td>
+              <td style="font-size:0.82rem;max-width:140px;">${esc(a.reason)}</td>
+              <td><span class="status-badge status-${(a.status||'').toLowerCase()}">${esc(a.status)}</span></td>
+              <td>
+                ${a.status==='Pending'?`<button class="action-btn" onclick="changeStatus('${a.id}','Confirmed')">✅ Confirm</button>`:''}
+                ${a.status==='Confirmed'?`<button class="action-btn" onclick="changeStatus('${a.id}','Completed')">✔ Done</button>`:''}
+                <button class="action-btn del" onclick="deleteAppt('${a.id}')">✕</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      </div>`;
+  }
+
+  document.getElementById('login-modal').addEventListener('click', function(e){ if(e.target===this) closeLogin(); });
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const d = document.getElementById('pt-date');
+    if(d) d.min = new Date().toISOString().split('T')[0];
+  });
+</script>
+</body>
+</html>
