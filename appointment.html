@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Book Appointment – JS Multispeciality Clinic</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-brand"><div class="nav-logo">⚕</div><div class="nav-title">JS Multispeciality Clinic<span>Virudhachalam</span></div></a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li><li><a href="doctors.html">Doctors</a></li>
+    <li><a href="services.html">Services</a></li><li><a href="appointment.html" class="active">Appointment</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <a href="tel:08610064897" class="nav-cta">📞 Call Now</a>
+    <a href="admin.html" class="nav-admin">Admin</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <div class="badge">Easy Booking</div>
+  <h1>Book an Appointment</h1>
+  <p>Fill the form below or call us directly. We'll confirm your slot promptly.</p>
+</div>
+
+<div class="section bg-light">
+  <div style="display:flex;gap:40px;flex-wrap:wrap;max-width:1100px;margin:0 auto;">
+
+    <!-- Left Info -->
+    <div style="flex:1;min-width:260px;">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:20px;">Contact Us Directly</h3>
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:22px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:#0B3D91;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">📞</div>
+        <div>
+          <div style="font-size:0.76rem;color:#8A94A6;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">Phone</div>
+          <div style="font-weight:600;font-size:1rem;margin-top:2px;">08610064897</div>
+          <a href="tel:08610064897" class="btn btn-primary" style="margin-top:10px;font-size:0.88rem;padding:10px 22px;">📞 Call to Book</a>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:22px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:#0B3D91;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">📍</div>
+        <div>
+          <div style="font-size:0.76rem;color:#8A94A6;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">Address</div>
+          <div style="font-size:0.95rem;margin-top:2px;line-height:1.7;">52, Bazaar St, T.Gopurapuram,<br/>Virudhachalam, Tamil Nadu 606001</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:22px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:#0B3D91;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">🕐</div>
+        <div>
+          <div style="font-size:0.76rem;color:#8A94A6;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">Clinic Hours</div>
+          <div style="font-size:0.95rem;margin-top:2px;line-height:1.7;">Mon–Sat: 9AM–1PM<br/>Mon–Sat: 5PM–9PM<br/><span style="color:#e74c3c;">Sunday: Closed</span></div>
+        </div>
+      </div>
+      <div style="background:#0B3D91;color:#fff;border-radius:12px;padding:20px 22px;">
+        <div style="font-weight:600;margin-bottom:6px;">🚶 Walk-ins Welcome</div>
+        <div style="font-size:0.85rem;color:#A8C4F0;line-height:1.6;">You can also walk in directly during clinic hours. No prior appointment needed for general consultations.</div>
+      </div>
+    </div>
+
+    <!-- Right Form -->
+    <div class="card" style="flex:1.5;min-width:300px;">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:24px;">📋 Online Appointment Request</h3>
+      <div class="form-row">
+        <div class="form-group"><label>Patient Name *</label><input type="text" id="pt-name" placeholder="Full name"/></div>
+        <div class="form-group"><label>Age</label><input type="number" id="pt-age" placeholder="Age" min="0" max="120"/></div>
+      </div>
+      <div class="form-group"><label>Phone Number *</label><input type="tel" id="pt-phone" placeholder="Contact number"/></div>
+      <div class="form-group">
+        <label>Select Doctor *</label>
+        <select id="pt-doctor">
+          <option value="">-- Choose Doctor --</option>
+          <option value="Dr. R. Shivasakthimani">Dr. R. Shivasakthimani – General Medicine & Diabetology</option>
+          <option value="Dr. R. Jeevitha Shivasakthimani">Dr. R. Jeevitha Shivasakthimani – Obstetrics & Gynaecology</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Preferred Date *</label><input type="date" id="pt-date"/></div>
+        <div class="form-group">
+          <label>Session</label>
+          <select id="pt-session">
+            <option value="Morning (9AM–1PM)">Morning (9AM–1PM)</option>
+            <option value="Evening (5PM–9PM)">Evening (5PM–9PM)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label>Reason / Symptoms</label><textarea id="pt-reason" rows="3" placeholder="Briefly describe your concern (optional)"></textarea></div>
+      <button class="form-submit" id="submit-btn" onclick="submitAppointment()">Submit Appointment Request</button>
+      <p style="font-size:0.78rem;color:#8A94A6;text-align:center;margin-top:12px;">We will call you back to confirm your appointment.</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDpBgo04RqFRj_4pAf3A3UaHfl0ePvN5F0",
+    authDomain: "js-clinic.firebaseapp.com",
+    projectId: "js-clinic",
+    storageBucket: "js-clinic.firebasestorage.app",
+    messagingSenderId: "57371602342",
+    appId: "1:57371602342:web:9e81f9946e2e5dd1267367"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  document.getElementById('pt-date').min = new Date().toISOString().split('T')[0];
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  window.submitAppointment = async function() {
+    const name   = document.getElementById('pt-name').value.trim();
+    const phone  = document.getElementById('pt-phone').value.trim();
+    const doctor = document.getElementById('pt-doctor').value;
+    const date   = document.getElementById('pt-date').value;
+    const age    = document.getElementById('pt-age').value;
+    const session= document.getElementById('pt-session').value;
+    const reason = document.getElementById('pt-reason').value.trim();
+
+    if (!name || !phone || !doctor || !date) { showToast('⚠️ Please fill all required fields.'); return; }
+
+    const btn = document.getElementById('submit-btn');
+    btn.textContent = 'Submitting...'; btn.disabled = true;
+
+    try {
+      await addDoc(collection(db, 'appointments'), {
+        patientName: name, phone, age, doctorName: doctor,
+        appointmentDate: date, session, reason, status: 'Pending',
+        submittedAt: serverTimestamp()
+      });
+      ['pt-name','pt-age','pt-phone','pt-doctor','pt-date','pt-reason'].forEach(id => document.getElementById(id).value='');
+      showToast('✅ Appointment submitted! We will call to confirm shortly.');
+    } catch(e) {
+      showToast('❌ Error! Please call us directly: 08610064897');
+    }
+    btn.textContent = 'Submit Appointment Request'; btn.disabled = false;
+  };
+</script>
+
+<footer>
+  <div class="footer-brand">⚕ JS Multispeciality Clinic</div>
+  <p>52, Bazaar St, T.Gopurapuram, Virudhachalam, Tamil Nadu 606001</p>
+  <div class="footer-links">
+    <a href="index.html">Home</a><a href="doctors.html">Doctors</a>
+    <a href="services.html">Services</a><a href="appointment.html">Appointment</a><a href="contact.html">Contact</a>
+  </div>
+  <p style="font-size:0.76rem;color:#555f73;margin-top:8px;">© 2024 JS Multispeciality Clinic. All rights reserved.</p>
+</footer>
+</body>
+</html>
