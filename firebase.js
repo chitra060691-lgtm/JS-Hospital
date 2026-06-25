@@ -4,13 +4,13 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebas
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDpBgo04RqFRj_4pAf3A3UaHfl0ePvN5F0",
-  authDomain: "js-clinic.firebaseapp.com",
-  projectId: "js-clinic",
-  storageBucket: "js-clinic.firebasestorage.app",
-  messagingSenderId: "57371602342",
-  appId: "1:57371602342:web:9e81f9946e2e5dd1267367",
-  measurementId: "G-4WQ740MG30"
+    apiKey: "AIzaSyDEkfX8R3H0m5dS2AqYQiFWgTjiioaDwjQ",
+    authDomain: "js-hospital-fada9.firebaseapp.com",
+    projectId: "js-hospital-fada9",
+    storageBucket: "js-hospital-fada9.firebasestorage.app",
+    messagingSenderId: "721735239795",
+    appId: "1:721735239795:web:d3fa5761c7d0d818168206",
+    measurementId: "G-TT4HYKSR8N"
 };
 
 const app = initializeApp(firebaseConfig);
