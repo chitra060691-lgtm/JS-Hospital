@@ -5,54 +5,62 @@
   <title>Admin – JS Multispeciality Clinic</title>
   <link rel="stylesheet" href="style.css"/>
   <style>
-    .admin-wrap { display:none; min-height:100vh; background:var(--off-white); }
     .login-wrap { min-height:100vh; background:linear-gradient(135deg,#0B3D91,#1565C0);
       display:flex; align-items:center; justify-content:center; padding:24px; }
     .login-box { background:#fff; border-radius:16px; padding:44px 40px; width:100%; max-width:420px; box-shadow:0 16px 60px rgba(0,0,0,0.25); }
     .login-box h2 { font-family:'Playfair Display',serif; font-size:1.7rem; margin-bottom:6px; }
     .login-box p { color:#8A94A6; font-size:0.88rem; margin-bottom:28px; }
-    .login-err { color:#c0392b; font-size:0.84rem; margin-top:10px; display:none; }
-    .admin-header { background:var(--blue-deep); color:#fff; padding:18px 32px; display:flex; align-items:center; justify-content:space-between; }
+    .login-err { color:#c0392b; font-size:0.84rem; margin-top:10px; display:none; padding:10px; background:#fee; border-radius:8px; }
+    .admin-wrap { display:none; min-height:100vh; background:var(--off-white); }
+    .admin-header { background:#0B3D91; color:#fff; padding:18px 32px; display:flex; align-items:center; justify-content:space-between; }
     .admin-header h2 { font-family:'Playfair Display',serif; font-size:1.3rem; }
     .admin-logout { background:rgba(255,255,255,0.15); border:none; color:#fff; padding:8px 20px; border-radius:20px; cursor:pointer; font-size:0.88rem; }
     .admin-logout:hover { background:rgba(255,255,255,0.25); }
     .admin-body { padding:32px; max-width:1200px; margin:0 auto; }
     .stat-grid { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:32px; }
     .stat-box { background:#fff; border-radius:12px; padding:22px 28px; flex:1; min-width:150px;
-      box-shadow:0 4px 24px rgba(11,61,145,0.10); border-left:4px solid var(--blue-mid); }
-    .stat-box .num { font-size:2rem; font-weight:700; color:var(--blue-deep); font-family:'Playfair Display',serif; }
+      box-shadow:0 4px 24px rgba(11,61,145,0.10); border-left:4px solid #1565C0; }
+    .stat-box .num { font-size:2rem; font-weight:700; color:#0B3D91; font-family:'Playfair Display',serif; }
     .stat-box .lbl { font-size:0.78rem; color:#8A94A6; margin-top:4px; }
     .panel { background:#fff; border-radius:12px; box-shadow:0 4px 24px rgba(11,61,145,0.10); margin-bottom:28px; }
-    .panel-hdr { padding:18px 28px; border-bottom:1px solid var(--gray-100); display:flex; align-items:center; justify-content:space-between; }
+    .panel-hdr { padding:18px 28px; border-bottom:1px solid #EEF1F6; display:flex; align-items:center; justify-content:space-between; }
     .panel-hdr h3 { font-size:1.02rem; font-weight:600; }
-    .filter-bar { display:flex; gap:10px; flex-wrap:wrap; padding:16px 28px; border-bottom:1px solid var(--gray-100); }
-    .filter-btn { background:var(--off-white); border:1.5px solid var(--gray-100); color:var(--gray-700);
+    .filter-bar { display:flex; gap:10px; flex-wrap:wrap; padding:16px 28px; border-bottom:1px solid #EEF1F6; }
+    .filter-btn { background:#F5F7FA; border:1.5px solid #EEF1F6; color:#3A4255;
       padding:6px 16px; border-radius:20px; font-size:0.82rem; cursor:pointer; transition:all .2s; }
-    .filter-btn.active { background:var(--blue-mid); color:#fff; border-color:var(--blue-mid); }
+    .filter-btn.active { background:#1565C0; color:#fff; border-color:#1565C0; }
   </style>
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- LOGIN PAGE -->
 <div class="login-wrap" id="login-wrap">
   <div class="login-box">
-    <div style="font-size:2rem;margin-bottom:12px;">⚕</div>
+    <div style="font-size:2.4rem;margin-bottom:14px;">⚕</div>
     <h2>Admin Login</h2>
     <p>JS Multispeciality Clinic — Doctor Dashboard</p>
-    <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="doctor@jsclinic.com"/></div>
-    <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-    <button class="form-submit" onclick="doLogin()">Login to Dashboard</button>
-    <div class="login-err" id="login-err">Wrong email or password. Please try again.</div>
-    <p style="text-align:center;margin-top:20px;font-size:0.82rem;color:#8A94A6;"><a href="index.html" style="color:#1565C0;">← Back to Website</a></p>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="doctor@jsclinic.com"/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="form-submit" id="login-btn" onclick="doLogin()">Login to Dashboard</button>
+    <div class="login-err" id="login-err">❌ Wrong email or password. Please try again.</div>
+    <p style="text-align:center;margin-top:20px;font-size:0.82rem;color:#8A94A6;">
+      <a href="index.html" style="color:#1565C0;">← Back to Website</a>
+    </p>
   </div>
 </div>
 
-<!-- ADMIN PANEL -->
+<!-- ADMIN DASHBOARD -->
 <div class="admin-wrap" id="admin-wrap">
   <div class="admin-header">
     <h2>⚕ JS Clinic — Admin Dashboard</h2>
-    <div style="display:flex;gap:10px;align-items:center;">
-      <span id="admin-email-display" style="font-size:0.82rem;color:#A8C4F0;"></span>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <span id="logged-email" style="font-size:0.82rem;color:#A8C4F0;"></span>
       <button class="admin-logout" onclick="doLogout()">🚪 Logout</button>
     </div>
   </div>
@@ -60,17 +68,17 @@
   <div class="admin-body">
     <!-- Stats -->
     <div class="stat-grid">
-      <div class="stat-box"><div class="num" id="s-total">–</div><div class="lbl">Total Appointments</div></div>
-      <div class="stat-box" style="border-left-color:#D4A017;"><div class="num" id="s-pending">–</div><div class="lbl">Pending</div></div>
-      <div class="stat-box" style="border-left-color:#27ae60;"><div class="num" id="s-confirmed">–</div><div class="lbl">Confirmed</div></div>
-      <div class="stat-box" style="border-left-color:#1E88E5;"><div class="num" id="s-today">–</div><div class="lbl">Today</div></div>
+      <div class="stat-box"><div class="num" id="s-total">0</div><div class="lbl">Total Appointments</div></div>
+      <div class="stat-box" style="border-left-color:#D4A017;"><div class="num" id="s-pending">0</div><div class="lbl">Pending</div></div>
+      <div class="stat-box" style="border-left-color:#27ae60;"><div class="num" id="s-confirmed">0</div><div class="lbl">Confirmed</div></div>
+      <div class="stat-box" style="border-left-color:#1E88E5;"><div class="num" id="s-today">0</div><div class="lbl">Today</div></div>
     </div>
 
-    <!-- Appointments Table -->
+    <!-- Table Panel -->
     <div class="panel">
       <div class="panel-hdr">
         <h3>📋 Appointment Requests</h3>
-        <span style="font-size:0.8rem;color:#8A94A6;">🔴 Live updates</span>
+        <span style="font-size:0.8rem;color:#8A94A6;">🔴 Live — updates automatically</span>
       </div>
       <div class="filter-bar">
         <button class="filter-btn active" onclick="setFilter('All',this)">All</button>
@@ -79,7 +87,7 @@
         <button class="filter-btn" onclick="setFilter('Completed',this)">✔ Completed</button>
       </div>
       <div id="table-wrap" style="overflow-x:auto;">
-        <div class="loading-state">⏳ Loading appointments...</div>
+        <div class="loading-state">⏳ Loading appointments from Firebase...</div>
       </div>
     </div>
   </div>
@@ -87,13 +95,13 @@
 
 <div class="toast" id="toast"></div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, onSnapshot, updateDoc, deleteDoc, doc, query, orderBy }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+<!-- Firebase Compat SDK (works without bundler) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
+<script>
+  // ✅ Firebase Config
   const firebaseConfig = {
     apiKey: "AIzaSyDpBgo04RqFRj_4pAf3A3UaHfl0ePvN5F0",
     authDomain: "js-clinic.firebaseapp.com",
@@ -103,23 +111,28 @@
     appId: "1:57371602342:web:9e81f9946e2e5dd1267367"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
+  firebase.initializeApp(firebaseConfig);
+  const db   = firebase.firestore();
+  const auth = firebase.auth();
 
   let allAppointments = [];
-  let currentFilter = 'All';
+  let currentFilter   = 'All';
+  let unsubscribe     = null;
 
+  // ---- TOAST ----
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3500);
   }
+
+  // ---- ESCAPE HTML ----
   function esc(s) {
     if (!s) return '—';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
+  // ---- FILTER ----
   window.setFilter = function(f, btn) {
     currentFilter = f;
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -127,20 +140,24 @@
     renderTable();
   };
 
+  // ---- RENDER TABLE ----
   function renderTable() {
-    const today = new Date().toISOString().split('T')[0];
-    const filtered = currentFilter === 'All' ? allAppointments : allAppointments.filter(a => a.status === currentFilter);
+    const today    = new Date().toISOString().split('T')[0];
+    const filtered = currentFilter === 'All'
+      ? allAppointments
+      : allAppointments.filter(a => a.status === currentFilter);
 
-    document.getElementById('s-total').textContent = allAppointments.length;
-    document.getElementById('s-pending').textContent = allAppointments.filter(a=>a.status==='Pending').length;
-    document.getElementById('s-confirmed').textContent = allAppointments.filter(a=>a.status==='Confirmed').length;
-    document.getElementById('s-today').textContent = allAppointments.filter(a=>a.appointmentDate===today).length;
+    document.getElementById('s-total').textContent     = allAppointments.length;
+    document.getElementById('s-pending').textContent   = allAppointments.filter(a => a.status === 'Pending').length;
+    document.getElementById('s-confirmed').textContent = allAppointments.filter(a => a.status === 'Confirmed').length;
+    document.getElementById('s-today').textContent     = allAppointments.filter(a => a.appointmentDate === today).length;
 
     const wrap = document.getElementById('table-wrap');
     if (!filtered.length) {
-      wrap.innerHTML = `<div class="empty-state">No ${currentFilter === 'All' ? '' : currentFilter.toLowerCase()} appointments found.</div>`;
+      wrap.innerHTML = `<div class="empty-state">No ${currentFilter === 'All' ? '' : currentFilter.toLowerCase()+' '}appointments found.</div>`;
       return;
     }
+
     wrap.innerHTML = `
       <table class="data-table">
         <thead><tr>
@@ -148,64 +165,96 @@
           <th>Date</th><th>Session</th><th>Reason</th><th>Status</th><th>Actions</th>
         </tr></thead>
         <tbody>
-          ${filtered.map((a,i)=>`
+          ${filtered.map((a, i) => `
             <tr>
-              <td>${i+1}</td>
-              <td><strong>${esc(a.patientName)}</strong>${a.age?` <span style="font-size:0.78rem;color:#8A94A6;">(${esc(a.age)}y)</span>`:''}</td>
-              <td><a href="tel:${esc(a.phone)}" style="color:#1565C0;text-decoration:none;">${esc(a.phone)}</a></td>
-              <td style="font-size:0.82rem;max-width:160px;">${esc(a.doctorName)}</td>
-              <td>${esc(a.appointmentDate)}</td>
-              <td style="font-size:0.82rem;">${esc(a.session)}</td>
-              <td style="font-size:0.82rem;max-width:140px;">${esc(a.reason)}</td>
-              <td><span class="status-badge status-${(a.status||'pending').toLowerCase()}">${esc(a.status)}</span></td>
+              <td>${i + 1}</td>
               <td>
-                ${a.status==='Pending'?`<button class="action-btn success" onclick="changeStatus('${a.id}','Confirmed')">✅ Confirm</button>`:''}
-                ${a.status==='Confirmed'?`<button class="action-btn" onclick="changeStatus('${a.id}','Completed')">✔ Done</button>`:''}
-                <button class="action-btn del" onclick="deleteAppt('${a.id}')">✕</button>
+                <strong>${esc(a.patientName)}</strong>
+                ${a.age ? `<br/><span style="font-size:0.76rem;color:#8A94A6;">${esc(a.age)} yrs</span>` : ''}
+              </td>
+              <td><a href="tel:${esc(a.phone)}" style="color:#1565C0;font-weight:500;text-decoration:none;">${esc(a.phone)}</a></td>
+              <td style="font-size:0.82rem;">${esc(a.doctorName)}</td>
+              <td><strong>${esc(a.appointmentDate)}</strong></td>
+              <td style="font-size:0.82rem;">${esc(a.session)}</td>
+              <td style="font-size:0.82rem;max-width:150px;color:#8A94A6;">${esc(a.reason)}</td>
+              <td><span class="status-badge status-${(a.status || 'pending').toLowerCase()}">${esc(a.status)}</span></td>
+              <td>
+                ${a.status === 'Pending'
+                  ? `<button class="action-btn success" onclick="changeStatus('${a.id}','Confirmed')">✅ Confirm</button>`
+                  : ''}
+                ${a.status === 'Confirmed'
+                  ? `<button class="action-btn" onclick="changeStatus('${a.id}','Completed')">✔ Done</button>`
+                  : ''}
+                <button class="action-btn del" onclick="deleteAppt('${a.id}')">✕ Delete</button>
               </td>
             </tr>`).join('')}
         </tbody>
       </table>`;
   }
 
-  window.changeStatus = async function(id, status) {
-    try { await updateDoc(doc(db,'appointments',id),{status}); showToast('Updated to '+status); }
-    catch(e) { showToast('Error updating status'); }
-  };
-  window.deleteAppt = async function(id) {
-    if(!confirm('Delete this appointment permanently?')) return;
-    try { await deleteDoc(doc(db,'appointments',id)); showToast('Appointment deleted.'); }
-    catch(e) { showToast('Error deleting.'); }
+  // ---- CHANGE STATUS ----
+  window.changeStatus = function(id, status) {
+    db.collection('appointments').doc(id).update({ status })
+      .then(() => showToast('✅ Status updated to ' + status))
+      .catch(() => showToast('❌ Error updating status'));
   };
 
-  window.doLogin = async function() {
+  // ---- DELETE ----
+  window.deleteAppt = function(id) {
+    if (!confirm('Delete this appointment permanently?')) return;
+    db.collection('appointments').doc(id).delete()
+      .then(() => showToast('🗑️ Appointment deleted.'))
+      .catch(() => showToast('❌ Error deleting appointment'));
+  };
+
+  // ---- LOGIN ----
+  window.doLogin = function() {
     const email = document.getElementById('login-email').value.trim();
-    const pass = document.getElementById('login-pass').value;
-    const err = document.getElementById('login-err');
+    const pass  = document.getElementById('login-pass').value;
+    const err   = document.getElementById('login-err');
+    const btn   = document.getElementById('login-btn');
     err.style.display = 'none';
-    try {
-      await signInWithEmailAndPassword(auth, email, pass);
-    } catch(e) {
-      err.style.display = 'block';
-    }
-  };
-  window.doLogout = async function() {
-    await signOut(auth);
+    btn.textContent = 'Logging in...'; btn.disabled = true;
+
+    auth.signInWithEmailAndPassword(email, pass)
+      .catch(() => {
+        err.style.display = 'block';
+        btn.textContent = 'Login to Dashboard'; btn.disabled = false;
+      });
   };
 
-  onAuthStateChanged(auth, user => {
+  // ---- LOGOUT ----
+  window.doLogout = function() {
+    if (unsubscribe) unsubscribe();
+    auth.signOut();
+  };
+
+  // ---- AUTH STATE WATCHER ----
+  auth.onAuthStateChanged(function(user) {
     if (user) {
-      document.getElementById('login-wrap').style.display = 'none';
-      document.getElementById('admin-wrap').style.display = 'block';
-      document.getElementById('admin-email-display').textContent = user.email;
-      const q = query(collection(db,'appointments'), orderBy('submittedAt','desc'));
-      onSnapshot(q, snap => {
-        allAppointments = snap.docs.map(d=>({id:d.id,...d.data()}));
-        renderTable();
-      });
+      // Show admin panel
+      document.getElementById('login-wrap').style.display  = 'none';
+      document.getElementById('admin-wrap').style.display  = 'block';
+      document.getElementById('logged-email').textContent  = user.email;
+
+      // Live listener — updates table automatically when Firestore changes
+      unsubscribe = db.collection('appointments')
+        .orderBy('submittedAt', 'desc')
+        .onSnapshot(function(snapshot) {
+          allAppointments = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+          renderTable();
+        }, function(err) {
+          console.error('Firestore error:', err);
+          document.getElementById('table-wrap').innerHTML =
+            '<div class="empty-state" style="color:#e74c3c;">⚠️ Error loading data. Check Firestore rules.</div>';
+        });
+
     } else {
-      document.getElementById('login-wrap').style.display = 'flex';
-      document.getElementById('admin-wrap').style.display = 'none';
+      // Show login
+      document.getElementById('login-wrap').style.display  = 'flex';
+      document.getElementById('admin-wrap').style.display  = 'none';
+      document.getElementById('login-btn').textContent     = 'Login to Dashboard';
+      document.getElementById('login-btn').disabled        = false;
     }
   });
 </script>
