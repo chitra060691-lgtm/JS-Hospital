@@ -1,4 +1,4 @@
-// ✅ FIREBASE CONFIG - js-clinic project
+// ✅ FIREBASE CONFIG - js-hospital-fada9 project
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
