@@ -148,8 +148,8 @@
       ['pt-name','pt-age','pt-phone','pt-doctor','pt-date','pt-reason'].forEach(id => document.getElementById(id).value = '');
       showToast('✅ Appointment submitted! We will call you to confirm.');
     } catch(e) {
-      console.error(e);
-      showToast('❌ Error submitting. Please call us: 08610064897');
+      console.error("Firebase Error:", e);
+      alert("Error Code: " + e.code + "\n\n" + e.message);
     }
     btn.textContent = 'Submit Appointment Request'; btn.disabled = false;
   };
